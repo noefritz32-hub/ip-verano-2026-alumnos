@@ -25,12 +25,18 @@ def getAllImages():
 
 
 def filterByCharacter(name):
-    """
-    Filtra las cards de personajes según el nombre proporcionado.
-    
-    Se debe filtrar los personajes cuyo nombre contenga el parámetro recibido. Retorna una lista de Cards filtradas.
-    """
-    pass
+    data = transport.getAllImages()
+
+    cards = []
+
+    for character in data:
+        card = translator.fromRequestIntoCard(character)
+
+        if name.lower() in card.name.lower():
+            cards.append(card)
+
+    return cards
+
 
 def filterByStatus(status_name):
     """
