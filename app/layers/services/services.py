@@ -123,3 +123,5 @@ def deleteFavourite(request):
 
     if fav_id:
         repositories.deleteFavourite(fav_id)
+        
+#Prueba
