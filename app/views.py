@@ -1,3 +1,4 @@
+
 # capa de vista/presentación
 
 from django.shortcuts import redirect, render
@@ -5,8 +6,10 @@ from .layers.services import services
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 
+
 def index_page(request):
     return render(request, 'index.html')
+
 
 def home(request):
     """
@@ -16,67 +19,100 @@ def home(request):
     images = services.getAllImages()
     favourite_list = services.getAllFavourites(request)
 
-    return render(
-        request,
-        'home.html',
-        {
-            'images': images,
-            'favourite_list': favourite_list
-        }
-    )
+    return render(request, 'home.html', {
+        'images': images,
+        'favourite_list': favourite_list
+    })
+
 
 
 def search(request):
+    """
+    Busca personajes por nombre.
+    """
 
-    query = request.POST.get("query")
+   
 
-    if not query:
-        return redirect('home')
+    if request.method == "POST":
 
-    images = services.filterByCharacter(query)
-    favourite_list = []
+        query = request.POST.get("query")
 
-    return render(
-        request,
-        'home.html',
-        {
-            'images': images,
-            'favourite_list': favourite_list
-        }
-    )
+        # si no escribió nada → volver al home
+        if not query or query.strip() == "":
+            return redirect('home')
+
+        images = services.filterByCharacter(query)
+        favourite_list = []
+
+        return render(
+            request,
+            'home.html',
+            {
+                'images': images,
+                'favourite_list': favourite_list
+            }
+        )
+
+    return redirect('home')
 
 
 def filter_by_status(request):
     """
-    Filtra personajes por su estado (Alive/Deceased).
-    
-    Se debe implementar el filtrado de personajes según su estado.
-    Se debe obtener el parámetro 'status' desde el POST, filtrar las imágenes según ese estado
-    y renderizar 'home.html' con los resultados. Si no hay estado, redirigir a 'home'.
+    Filtra personajes por estado (Alive / Deceased).
     """
-    pass
 
-# Estas funciones se usan cuando el usuario está logueado en la aplicación.
+    if request.method == "POST":
+        status = request.POST.get("status")
+
+        if not status:
+            return redirect('home')
+
+        images = services.filter_images_by_status(status)
+
+        favourite_list = []
+        if request.user.is_authenticated:
+            favourite_list = services.get_favourites_by_user(request.user)
+
+        return render(request, 'home.html', {
+            'images': images,
+            'favourite_list': favourite_list
+        })
+
+    return redirect('home')
+
+
+# -------- FAVORITOS --------
+
 @login_required
 def getAllFavouritesByUser(request):
-    """
-    Obtiene todos los favoritos del usuario autenticado.
-    """
-    pass
+
+    images = services.get_favourites_by_user(request.user)
+
+    return render(request, 'home.html', {
+        'images': images,
+        'favourite_list': images
+    })
+
 
 @login_required
 def saveFavourite(request):
-    """
-    Guarda un personaje como favorito.
-    """
-    pass
+
+    if request.method == "POST":
+        image_id = request.POST.get("image_id")
+        services.save_favourite(request.user, image_id)
+
+    return redirect('home')
+
 
 @login_required
 def deleteFavourite(request):
-    """
-    Elimina un favorito del usuario.
-    """
-    pass
+
+    if request.method == "POST":
+        image_id = request.POST.get("image_id")
+        services.delete_favourite(request.user, image_id)
+
+    return redirect('home')
+
 
 @login_required
 def exit(request):
