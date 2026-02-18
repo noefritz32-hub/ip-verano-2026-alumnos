@@ -22,7 +22,16 @@ def getAllImages():
         cards.append(card)
 
     return cards
+def filter_images_by_status(status):
 
+    cards = getAllImages()
+    filtered = []
+
+    for card in cards:
+        if card.status == status:
+            filtered.append(card)
+
+    return filtered
 
 def filterByCharacter(name):
     data = transport.getAllImages()
@@ -44,7 +53,19 @@ def filterByStatus(status_name):
     
     Se deben filtrar los personajes que tengan el estado igual al parámetro 'status_name'. Retorna una lista de Cards filtradas.
     """
-    pass
+
+    data = transport.getAllImages()
+    cards = []
+
+    for character in data:
+        card = translator.fromRequestIntoCard(character)
+
+        # protección contra valores vacíos
+        if card.status and card.status.lower() == status_name.lower():
+            cards.append(card)
+
+    return cards
+
 
 # añadir favoritos (usado desde el template 'home.html')
 def saveFavourite(request):
@@ -54,7 +75,19 @@ def saveFavourite(request):
     Se deben convertir los datos del request en una Card usando el translator,
     asignarle el usuario actual, y guardarla en el repositorio.
     """
-    pass
+    user = get_user(request)
+
+    if not user.is_authenticated:
+        return
+
+    # convierte datos del POST en Card
+    card = translator.fromRequestIntoCard(request.POST)
+
+    # asigna usuario
+    card.user = user
+
+    repositories.saveFavourite(card)
+
 
 def getAllFavourites(request):
     """
@@ -63,7 +96,22 @@ def getAllFavourites(request):
     Si el usuario está autenticado, se deben obtener sus favoritos desde el repositorio,
     transformarlos en Cards usando translator y retornar la lista. Si no está autenticado, se retorna una lista vacía.
     """
-    pass
+    user = get_user(request)
+
+    if not user.is_authenticated:
+        return []
+
+    favourites = repositories.getAllFavouritesByUser(user)
+
+    cards = []
+
+    for fav in favourites:
+        card = translator.fromModelIntoCard(fav)
+        cards.append(card)
+
+    return cards
+
+
 
 def deleteFavourite(request):
     """
@@ -71,4 +119,7 @@ def deleteFavourite(request):
     
     Se debe obtener el ID del favorito desde el POST y eliminarlo desde el repositorio.
     """
-    pass
+    fav_id = request.POST.get("id")
+
+    if fav_id:
+        repositories.deleteFavourite(fav_id)
