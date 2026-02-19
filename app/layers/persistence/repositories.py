@@ -24,3 +24,8 @@ def deleteFavourite(favId):
     favourite = Favourite.objects.get(id=favId)
     favourite.delete()
     return True
+
+from app.models import Favourite
+
+def getAllFavouritesByUser(user):
+    return Favourite.objects.filter(user=user)
