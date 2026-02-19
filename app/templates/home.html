@@ -1,16 +1,20 @@
-{% extends 'header.html' %} {% block content %}
+{% extends 'header.html' %}
+{% block content %}
+
 <main>
     <h1 class="text-center">Buscador de personajes de Los Simpsons</h1>
 
+    <!-- BUSCADOR -->
     <div class="d-flex justify-content-center" style="margin-bottom: 1%">
-        <!-- Buscador del sitio -->
         <form class="d-flex" action="{% url 'buscar' %}" method="POST">
             {% csrf_token %}
-            <input class="form-control me-2" type="search" name="query" placeholder="Homer, Marge, Bart, Lisa..." aria-label="Search">
+            <input class="form-control me-2" type="search" name="query"
+                   placeholder="Homer, Marge, Bart, Lisa..." aria-label="Search">
             <button class="btn btn-outline-success" type="submit">Buscar</button>
         </form>
     </div>
 
+    <!-- FILTROS -->
     <div class="d-flex gap-1 col-2 mx-auto mb-3">
         <form method="post" action="{% url 'filter_by_status' %}">
             {% csrf_token %}
@@ -25,62 +29,82 @@
         </form>
     </div>
 
+    <!-- GALERÍA -->
     <div class="row row-cols-1 row-cols-md-3 g-4">
-     
 
-  {% if images|length == 0 %}
-    <div class="col-12">
-      <h2 class="text-center">La búsqueda no arrojó resultados...</h2>
-    </div>
-  {% else %}
-
-    {% for img in images %}
-      <div class="col">
-        <div class="card h-100 shadow-sm">
-          <div class="row g-0">
-
-            <!-- Imagen -->
-            <div class="col-md-4 d-flex align-items-center justify-content-center p-2">
-              <img src="{{ img.image }}"
-                   class="img-fluid rounded-circle"
-                   alt="{{ img.name }}">
-            </div>
-
-            <!-- Contenido -->
-            <div class="col-md-8">
-              <div class="card-body">
-                <h5 class="card-title text-center">{{ img.name }}</h5>
-
-                <div class="alert alert-warning p-2 text-center">
-                  "{{ img.phrase }}"
-                </div>
-
-                <p class="card-text mb-1">
-                  <strong>Género:</strong> {{ img.gender }}
-                </p>
-
-                <p class="card-text mb-1">
-                  <strong>Edad:</strong> {{ img.age }} años
-                </p>
-
-                <p class="card-text mb-1">
-                  <strong>Estado:</strong> {{ img.status }}
-                </p>
-
-                <p class="card-text">
-                  <strong>Ocupación:</strong> {{ img.occupation }}
-                </p>
-
-              </div>
-            </div>
-
-          </div>
+    {% if images|length == 0 %}
+        <div class="col-12">
+            <h2 class="text-center">La búsqueda no arrojó resultados...</h2>
         </div>
-      </div>
-    {% endfor %}
+    {% else %}
 
-  {% endif %}
+        {% for img in images %}
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <div class="row g-0">
 
-</div>
+                    <!-- Imagen -->
+                    <div class="col-md-4 d-flex align-items-center justify-content-center p-2">
+                        <img src="{{ img.image }}"
+                             class="img-fluid rounded-circle"
+                             alt="{{ img.name }}">
+                    </div>
+
+                    <!-- Contenido -->
+                    <div class="col-md-8">
+                        <div class="card-body">
+
+                            <h5 class="card-title text-center">{{ img.name }}</h5>
+
+                            <div class="alert alert-warning p-2 text-center">
+                                "{{ img.phrase }}"
+                            </div>
+
+                            <p class="card-text mb-1">
+                                <strong>Género:</strong> {{ img.gender }}
+                            </p>
+
+                            <p class="card-text mb-1">
+                                <strong>Edad:</strong> {{ img.age }} años
+                            </p>
+
+                            <p class="card-text mb-1">
+                                <strong>Estado:</strong> {{ img.status }}
+                            </p>
+
+                            <p class="card-text">
+                                <strong>Ocupación:</strong> {{ img.occupation }}
+                            </p>
+
+                            {% if user.is_authenticated %}
+                            <form method="post" action="{% url 'agregar-favorito' %}">
+                                {% csrf_token %}
+
+                                <input type="hidden" name="name" value="{{ img.name }}">
+                                <input type="hidden" name="gender" value="{{ img.gender }}">
+                                <input type="hidden" name="status" value="{{ img.status }}">
+                                <input type="hidden" name="occupation" value="{{ img.occupation }}">
+                                <input type="hidden" name="phrases" value="{{ img.phrase }}">
+                                <input type="hidden" name="age" value="{{ img.age }}">
+                                <input type="hidden" name="image" value="{{ img.image }}">
+
+                                <button type="submit" class="btn btn-warning w-100 mt-2">
+                                    ⭐ Agregar a favoritos
+                                </button>
+                            </form>
+                            {% endif %}
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+    {% endif %}
+
+    </div>
 </main>
+
 {% endblock %}

@@ -4,23 +4,26 @@ from app.layers.utilities.card import Card
 from ...config import config
 
 # Usado cuando la información viene de la API, para transformarla en una Card.
-def fromRequestIntoCard(object):
-    portrait_path = object.get('portrait_path', '')
-    
+def fromPostIntoCard(post):
+
+    portrait_path = post.get('portrait_path', '')
+
     base_url = config.SIMPSONS_CDN_BASE_URL
     image_size = config.SIMPSONS_IMAGE_SIZE
     image_url = base_url + '/' + image_size + portrait_path
-    
+
     card = Card(
-        name=object.get('name'),
-        gender=object.get('gender'),
-        status=object.get('status'),
-        phrases=object.get('phrases', []),
-        occupation=object.get('occupation'),
+        name=post.get('name'),
+        gender=post.get('gender'),
+        status=post.get('status'),
+        phrases=post.get('phrases', []),
+        occupation=post.get('occupation'),
         image=image_url,
-        age=object.get('age')
+        age=post.get('age')
     )
+
     return card
+
 
 
 # Usado cuando la información viene del template, para transformarla en una Card antes de guardarla en la base de datos.
@@ -49,4 +52,23 @@ def fromRepositoryIntoCard(repo_dict):
         image=repo_dict.get('image'),
         age=repo_dict.get('age')
     )
+    return card
+def fromRequestIntoCard(object):
+
+    portrait_path = object.get('portrait_path', '')
+
+    base_url = config.SIMPSONS_CDN_BASE_URL
+    image_size = config.SIMPSONS_IMAGE_SIZE
+    image_url = base_url + '/' + image_size + portrait_path
+
+    card = Card(
+        name=object.get('name'),
+        gender=object.get('gender'),
+        status=object.get('status'),
+        phrases=object.get('phrases', []),
+        occupation=object.get('occupation'),
+        image=image_url,
+        age=object.get('age')
+    )
+
     return card

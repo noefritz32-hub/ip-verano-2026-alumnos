@@ -1,4 +1,3 @@
-
 # capa de vista/presentación
 
 from django.shortcuts import redirect, render
@@ -13,7 +12,7 @@ def index_page(request):
 
 def home(request):
     """
-    Vista principal que muestra la galería de personajes de Los Simpsons.
+    Vista principal que muestra la galería de personajes.
     """
 
     images = services.getAllImages()
@@ -25,33 +24,25 @@ def home(request):
     })
 
 
-
 def search(request):
     """
     Busca personajes por nombre.
     """
 
-   
-
     if request.method == "POST":
 
         query = request.POST.get("query")
 
-        # si no escribió nada → volver al home
         if not query or query.strip() == "":
             return redirect('home')
 
         images = services.filterByCharacter(query)
-        favourite_list = []
+        favourite_list = services.getAllFavourites(request)
 
-        return render(
-            request,
-            'home.html',
-            {
-                'images': images,
-                'favourite_list': favourite_list
-            }
-        )
+        return render(request, 'home.html', {
+            'images': images,
+            'favourite_list': favourite_list
+        })
 
     return redirect('home')
 
@@ -67,11 +58,8 @@ def filter_by_status(request):
         if not status:
             return redirect('home')
 
-        images = services.filter_images_by_status(status)
-
-        favourite_list = []
-        if request.user.is_authenticated:
-            favourite_list = services.get_favourites_by_user(request.user)
+        images = services.filter_by_status(status)
+        favourite_list = services.getAllFavourites(request)
 
         return render(request, 'home.html', {
             'images': images,
@@ -86,11 +74,11 @@ def filter_by_status(request):
 @login_required
 def getAllFavouritesByUser(request):
 
-    images = services.get_favourites_by_user(request.user)
+    favourite_list = services.getAllFavourites(request)
 
     return render(request, 'home.html', {
-        'images': images,
-        'favourite_list': images
+        'images': [],
+        'favourite_list': favourite_list
     })
 
 
@@ -98,8 +86,7 @@ def getAllFavouritesByUser(request):
 def saveFavourite(request):
 
     if request.method == "POST":
-        image_id = request.POST.get("image_id")
-        services.save_favourite(request.user, image_id)
+        services.saveFavourite(request)
 
     return redirect('home')
 
@@ -108,8 +95,7 @@ def saveFavourite(request):
 def deleteFavourite(request):
 
     if request.method == "POST":
-        image_id = request.POST.get("image_id")
-        services.delete_favourite(request.user, image_id)
+        services.deleteFavourite(request)
 
     return redirect('home')
 
